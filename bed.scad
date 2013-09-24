@@ -9,6 +9,8 @@
  * - add projection for (minimum) laser cutting
  */
 
+use <vcad/vector.scad>
+
 working_dim = 400; // 40x40cm
 plywood_thickness = 10; // 1cm, max for laser cut
 tower_dist = 300; // distance between center and tower center
@@ -17,6 +19,20 @@ rod_diameter = 12;
 extra_rod = 20; // distance from border to rod center
 
 tower_radius = working_dim/2;
+
+// p1 is the left-upper point of bed
+p1 = [ tower_dist + extra_rod
+	 , (rod_dist/2) + extra_rod];
+// p2 is the left-lower point of bed
+p2 = [ tower_dist + extra_rod
+	 , -(rod_dist/2) - extra_rod];
+
+// pp1 and pp2 are the same points rotate from 120°
+pp1 = rotate2D(-120,p1);
+pp2 = rotate2D(-120,p2);
+
+2d = false;
+//2d = true;
 
 /* not working well
 module multiple(n) {
@@ -43,6 +59,10 @@ module symetric() {
 	}
 	//	multiple(2) child(0);
 }
+
+function rotate2D(a,v) =
+	[ [cos(a), -sin(a)],
+	  [sin(a),  cos(a)] ] * v;
 
 
 module working_surface() {
@@ -117,40 +137,38 @@ module bed_plain() {
 	}
 }
 
+module bed_holes(nb_screw_holes=4, with_belt_holes=true) {
+	rod_holes();
+	if (nb_screw_holes!=0) {
+		triple()
+			screw_holes(nb_screw_holes);
+	}
+	if (with_belt_holes) {
+		triple()
+			timing_belt_holes();
+	}
+}
+
 // - nb_screw_holes number of screws: 0: none, 2: only front, 4: back
 module bed(nb_screw_holes=4, with_belt_holes=true) {
 	difference() {
 		bed_plain();
-		rod_holes();
-		if (nb_screw_holes!=0) {
-			triple()
-				screw_holes(nb_screw_holes);
-		}
-		if (with_belt_holes) {
-			triple()
-				timing_belt_holes();
-		}
+		bed_holes(nb_screw_holes,with_belt_holes);
 	}
 }
 
-function rotate2D(a,v) =
-	[ [cos(a), -sin(a)],
-	  [sin(a), cos(a)]] * v;
-
-module plywood_base() {
-	p1 = [tower_dist + extra_rod
-		, (rod_dist/2) + extra_rod];
-	pp1 = rotate2D(-120,p1);
-	p2 = [tower_dist + extra_rod
-		, -(rod_dist/2) - extra_rod];
-	pp2 = rotate2D(-120,p2);
-
+module plywood() {
 	plywood_width = p2[0]-pp2[0];
 	plywood_height = -2*pp1[1];
+	
 	echo("plywood width:",plywood_width);
 	echo("plywood height:",plywood_height);
-	translate([pp2[0],pp1[1],-plywood_thickness/2])
-		cube([plywood_width,plywood_height,plywood_thickness],center=false);
+
+	// in 2dn keep only dimensions of plywood, not plywood itself
+	if (!2d) {
+		translate([pp2[0],pp1[1],-plywood_thickness/2])
+			cube([plywood_width,plywood_height,plywood_thickness],center=false);
+	}
 }
 
 module smooth_rod() {
@@ -183,10 +201,43 @@ module round_working_surface() {
 			working_surface();
 }
 
-bed(nb_screw_holes=4, with_belt_holes=true);
-*bed(nb_screw_holes=2, with_belt_holes=false);
+// 1 bed and 1 top shifted
+module beds2() {
+	shift = vcad_distance(p1,p2)*1.5
+		 + vcad_distance(p2,pp1)/2;
+	
+	echo("Shift: ", shift);
+	
+	translate([0, shift/2]) bed(nb_screw_holes=4, with_belt_holes=true);
+	translate([0,-shift/2]) bed(nb_screw_holes=2, with_belt_holes=false);
+}
 
-*%plywood_base();
+module plywood2() {
+	plywood2_width = p2[0]-pp2[0];
+	plywood2_height = vcad_distance(p2,pp1)*1.5
+			 + vcad_distance(p1,p2)*2.5;
+	
+	echo("plywood width  for 2 beds: ", plywood2_width);
+	echo("Plywood height for 2 beds: ", plywood2_height);
+
+	// in 2dn keep only dimensions of plywood, not plywood itself
+	if (!2d) {
+		translate([pp2[0],pp1[1],-plywood_thickness/2])
+			cube([plywood2_width,plywood2_height,plywood_thickness], center=false);
+	}
+}
+
+if (2d) {
+*	projection(cut = false)
+		bed_holes(nb_screw_holes=4, with_belt_holes=true);
+	plywood();
+} else {
+	*bed(nb_screw_holes=4, with_belt_holes=true);
+	*bed(nb_screw_holes=2, with_belt_holes=false);
+}
+
+*%plywood();
+*%plywood2();
 *round_working_surface();
-pcb();
-towers();
+*pcb();
+*towers();
