@@ -36,4 +36,38 @@ module geomag_rod() {
 }
 
 *geomag_ball();
-geomag_rod();
+*geomag_rod();
+
+module geomag_pos(pos=[0,0,0]) {
+    l = geomag_rod_sizes[0];
+    r = geomag_ball_radius - geomag_dimple_deph;
+    d = 2*r+l;
+    translate(d*pos)
+        child();
+}
+
+module geomag_rod_pos(pos=[0,0,0]) {
+    geomag_pos(pos)
+    if ((pos[0]*2)%2!=0) {
+        rotate([0,90,0])
+        geomag_rod();
+    } else if ((pos[1]*2)%2!=0) {
+        rotate([90,0,0])
+        geomag_rod();
+    } else {
+        geomag_rod();
+    }
+}
+
+module geomag_ball_pos(pos=[0,0,0]) {
+    geomag_pos(pos)
+        geomag_ball();
+}
+
+geomag_ball_pos();
+geomag_ball_pos([0,0,1]);
+geomag_ball_pos([1,0,0]);
+geomag_ball_pos([0,1,0]);
+geomag_rod_pos([0,0,0.5]);
+geomag_rod_pos([0.5,0,0]);
+geomag_rod_pos([0,0.5,0]);
