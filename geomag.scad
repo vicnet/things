@@ -6,8 +6,9 @@ geomag_ball_radius = 12.7/2;
 geomag_rod_sizes = [26.8,7.4/2]; // length, radius
 geomag_dimple_deph = 0.43; // depth connection ball-rod
 
-
 granularity = 30;
+
+function geomag_rod_length() = geomag_rod_sizes[0];
 
 module geomag_ball() {
 	color("LightSteelBlue")
@@ -44,11 +45,11 @@ module geomag_rod(color="red") {
 			cap();
 }
 
-module geomag_pos(pos=[0,0,0]) {
-    l = geomag_rod_sizes[0];
-    r = geomag_ball_radius - geomag_dimple_deph;
-    d = 2*r+l;
-    translate(d*pos)
+function geomag_pos(pos=[0,0,0]) = 
+	(2*geomag_ball_radius - 2*geomag_dimple_deph+geomag_rod_length())*pos;
+
+module geomag_pos_child(pos=[0,0,0]) {
+	translate(geomag_pos(pos))
         child();
 }
 
@@ -67,7 +68,7 @@ module geomag_rod_z(color="red") {
 }
 	
 module geomag_rod_pos(pos=[0,0,0], color="red") {
-    geomag_pos(pos)
+	geomag_pos_child(pos)
 		if ((pos[0]*2)%2!=0) {
 			geomag_rod_x(color);
 		} else if ((pos[1]*2)%2!=0) {
@@ -77,8 +78,8 @@ module geomag_rod_pos(pos=[0,0,0], color="red") {
 		}
 }
 
-module geomag_ball_pos(pos=[0,0,0], color="red") {
-    geomag_pos(pos)
+module geomag_ball_pos(pos=[0,0,0]) {
+	geomag_pos_child(pos)
         geomag_ball();
 }
 
@@ -99,28 +100,28 @@ module geomag_chair() {
 }
 
 // use <openscad geomag.scad -D example=x -o geomag.xxx> to generate examples output
-example=5;
+geomag_example=0;
 
-if (example==1) {
+if (geomag_example==1) {
 	geomag_ball();
 }
-if (example==2) {
+if (geomag_example==2) {
 	geomag_rod("yellow");
 }
-if (example==3) {
+if (geomag_example==3) {
 	geomag_ball_pos([0,0,0]);
 	geomag_ball_pos([0,0,1]);
 	geomag_rod_pos([0,0,0.5]);
 }
-if (example==4) {
+if (geomag_example==4) {
 	geomag_chair();
 }
-if (example==5) {
+if (geomag_example==5) {
 	geomag_ball();
-	geomag_pos([0.5,0,0])
+	geomag_pos_child([0.5,0,0])
 		geomag_rod_x("green");
-	geomag_pos([0,0.5,0])
+	geomag_pos_child([0,0.5,0])
 		geomag_rod_y("lightblue");
-	geomag_pos([0,0,0.5])
+	geomag_pos_child([0,0,0.5])
 		geomag_rod_z("red");
 }
