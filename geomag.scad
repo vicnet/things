@@ -9,6 +9,7 @@ geomag_dimple_deph = 0.43; // depth connection ball-rod
 granularity = 30;
 
 function geomag_rod_length() = geomag_rod_sizes[0];
+function geomag_rod_radius() = geomag_rod_sizes[1];
 
 module geomag_ball() {
 	color("LightSteelBlue")

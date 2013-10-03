@@ -5,46 +5,38 @@ use <vcad/vector.scad>
 use <geomag.scad>
 
 effector_radius = 40;
-/*
+
 vcad_triple() 
 vcad_tx(-effector_radius) {
 	geomag_ball_pos([0,0.5]);
 	geomag_ball_pos([0,-0.5]);
 	geomag_rod_y();
 }
-*/
 
 p1 = geomag_pos([0,0.5])+[-effector_radius,0];
 p2 = geomag_pos([0,-0.5])+[-effector_radius,0];
 pp1 = vcad_rotate2D(120,p1);
 pp2 = vcad_rotate2D(120,p2);
+
+inter_rod = vcad_distance(p2,pp1);
+echo("inter-rod distance: ", inter_rod);
+
 /*
-echo(p1);
-echo(p2);
-echo(pp1);
-echo(pp2);
-*/
-/*
+test points
+translate(p1) geomag_ball();
 translate(p1) geomag_ball();
 translate(p2) geomag_ball();
 translate(pp1) geomag_ball();
 translate(pp2) geomag_ball();
 */
 
-echo("inter-rod distance: ",vcad_distance(p2,pp1));
-/*
-inter_rod = 50;
 
-vcad_triple() 
-vcad_symetric(axe=VCAD_X)
+delta_geomag_link = 7;
 
-translate([effector_radius,inter_rod/2]) {
-	geomag_ball();
-//	geomag_rod_pos([-0.5,0]);
-//	geomag_rod_pos([0,-0.5]);
+union() {
+vcad_triple()
+vcad_tx(-effector_radius/2-geomag_rod_radius()/2-delta_geomag_link/2)
+    square([effector_radius + geomag_rod_radius() + delta_geomag_link,geomag_rod_length()],center=true);
 }
 
-translate([effector_radius,inter_rod/2])
-	rotate(240)
-		geomag_rod_pos([0,-0.5]);
-*/
+color("blue") circle(30);

@@ -251,9 +251,11 @@ module plywood2() {
 }
 
 if (laser) {
-	projection(cut = false)
-        beds2();
-    plywood2();
+    assign($fn = 30) {
+        projection(cut = false)
+            beds2();
+        plywood2();
+    }
 } else {
 	*bed(nb_screw_holes=4, with_belt_holes=true);
 	*bed(nb_screw_holes=2, with_belt_holes=false);
