@@ -30,7 +30,7 @@ module cone() {
 }
 
 // cone de base
-//cone();
+cone();
 
 //------  motifs ----------
 
@@ -40,41 +40,10 @@ module dent() {
     ld = 2.4;
     hd = 1;
     pd = 2;
-    // mise en plasce
-    vtz(h)
-    vtx(-e/2) // décalage vers l'intéieur de l'epaisseur
-    difference() {
-//    union() {
-        // dent avec rebord
-        vcube(x=-e/2-ld,y=pd,z=-hd-ld, centery=true);
-        // arrondi du rebord
-        vtx(-ld-e/2)
-        vty(+pd/2+VEPSILON)
-        vtz(-ld-hd)
-        vrx(90) // rotation
-        cylinder(h=pd+VEPSILON*2,r=ld,$fn=30);
-    }
+    // mise en place
+    vrz(180) vtx(e) vtz(-e/2) vreinfor([ld,pd,ld],e=e/2);
 }
 
-//vduplicate_rot(n=VZ, $fn=6, r=r)
-//    dent();
-
-module renfort(size, e=0, x,y,z, ex, ez) {
-    s = vpoint(size, x, y, z);
-    ex = vopt(ex,e);
-    ez = vopt(ez,e);
-    ns = s+[ex,0,ez];
-    vtz(-s.z)
-    difference() {
-        vtx(-ex)
-        vcube(ns,centery=true);
-//        resize(s)
-        scale([1,1,s.z/s.x])
-        vtx(s.x)
-        vrx(90) // rotation on XZ plane
-        cylinder(h=s.y+VEPSILON*2,r=s.x,$fn=30,center=true);
-    }
-}
-
-renfort([10,1,10],e=1);
-//renfort([10,1,15]);
+vtz(h)
+  vduplicate_rot(n=VZ, $fn=6, r=r)
+    dent();
